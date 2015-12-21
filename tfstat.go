@@ -2,26 +2,27 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/Drpsycho/goquery"
 	"html/template"
 	"log"
 	"os"
 )
 
-const tpl = `
-<!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="UTF-8">
-		<title>TF</title>
-	</head>
-	<body>
-		{{.}}!
-	</body>
-</html>`
-
 var url = flag.String("url", "", "url for parse")
+var templ = flag.String("t", "./templ.html", "template file (.html)")
+var outputname = flag.String("o", "./tfstat.html", "output file name")
+
+type Player struct {
+	Rank        string
+	Name        string
+	Points      string
+	Time_online string
+	Kills       string
+	Death       string
+	Kd          string
+	Headshot    string
+	Accuracy    string
+}
 
 func main() {
 	flag.Parse()
@@ -41,18 +42,44 @@ func main() {
 	doc, err := goquery.NewDocument(*url)
 	check(err)
 
-	ret, err := doc.Find(".columns").Html()
+	var bar []Player
+
+	doc.Find(".data-table").Each(func(i int, s *goquery.Selection) {
+		s.Find("tr").Each(func(j int, tr *goquery.Selection) {
+			var foo Player
+			tr.Find("td").Each(func(k int, td *goquery.Selection) {
+				switch k + 1 {
+				case 1:
+					foo.Rank = td.Text()
+				case 2:
+					foo.Name = td.Text()
+				case 3:
+					foo.Points = td.Text()
+				case 5:
+					foo.Time_online = td.Text()
+				case 6:
+					foo.Kills = td.Text()
+				case 7:
+					foo.Death = td.Text()
+				case 8:
+					foo.Kd = td.Text()
+				case 9:
+					foo.Headshot = td.Text()
+				case 10:
+					foo.Accuracy = td.Text()
+				}
+			})
+			bar = append(bar, foo)
+		})
+	})
+
+	t, err := template.ParseFiles(*templ)
 	check(err)
 
-	t, err := template.New("webpage").Parse(tpl)
-	check(err)
-
-	f, err := os.Create("./hlstat.html")
+	f, err := os.Create(*outputname)
 	check(err)
 
 	defer f.Close()
-	err = t.Execute(f, template.HTML(ret))
+	err = t.Execute(f, bar)
 	check(err)
-
-	fmt.Println("all ok")
 }
