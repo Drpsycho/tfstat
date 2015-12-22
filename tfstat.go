@@ -34,11 +34,11 @@ func main() {
 
 	check := func(err error) {
 		if err != nil {
+			log.Println("Error!!!")
 			log.Fatal(err)
 		}
 	}
 
-	//"http://91.215.138.164:9000/"
 	doc, err := goquery.NewDocument(*url)
 	check(err)
 
@@ -82,4 +82,6 @@ func main() {
 	defer f.Close()
 	err = t.Execute(f, bar)
 	check(err)
+
+	log.Println("done")
 }
