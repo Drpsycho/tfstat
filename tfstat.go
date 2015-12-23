@@ -12,7 +12,6 @@ import (
 
 var url = flag.String("url", "", "url for parse")
 var templ = flag.String("t", "./templ.html", "template file (.html)")
-var outputname = flag.String("o", "./tfstat.html", "output file name")
 
 type Player struct {
 	Rank        string
